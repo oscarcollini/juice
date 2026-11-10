@@ -2,8 +2,6 @@
 
 const byId = id => document.getElementById(id);
 const input = byId('input');
-const choose = byId('choose');
-const replace = byId('replace');
 const share = byId('share');
 const save = byId('save');
 const photo = byId('photo');
@@ -12,11 +10,6 @@ const maxSide = 2048;
 const jpegQuality = 0.84;
 let outputUrl;
 let outputFile;
-let originalWebp;
-let replacement;
-const canSelectFiles = typeof window.showOpenFilePicker === 'function' &&
-  typeof window.showSaveFilePicker === 'function' &&
-  typeof window.FileSystemHandle?.prototype.remove === 'function';
 let selection = 0;
 
 const number = new Intl.NumberFormat('it-IT', { maximumFractionDigits: 2 });
@@ -68,13 +61,9 @@ function clearResult() {
   if (outputUrl) URL.revokeObjectURL(outputUrl);
   outputUrl = undefined;
   outputFile = undefined;
-  originalWebp = undefined;
-  replacement = undefined;
-  replace.textContent = 'Sostituisci con JPG';
-  replace.hidden = true;
 }
 
-choose.addEventListener('click', () => input.click());
+byId('choose').addEventListener('click', () => input.click());
 input.addEventListener('change', async () => {
   const file = input.files[0];
   input.value = '';
@@ -88,10 +77,6 @@ input.addEventListener('change', async () => {
     const name = (file.name.replace(/\.[^.]+$/, '') || 'foto') + '-juice.jpg';
     outputFile = new File([jpeg], name, { type: 'image/jpeg' });
     outputUrl = URL.createObjectURL(outputFile);
-    if (/\.webp$/i.test(file.name) && (canSelectFiles || typeof window.showDirectoryPicker === 'function')) {
-      originalWebp = file;
-      replace.hidden = false;
-    }
     photo.src = outputUrl;
     save.href = outputUrl;
     save.download = name;
@@ -109,163 +94,6 @@ input.addEventListener('change', async () => {
   } catch {
     if (current === selection) status.textContent = 'Non riesco ad aprire questa immagine. Prova con un JPG, WebP o PNG.';
   }
-});
-
-async function fileDigest(file) {
-  return new Uint8Array(await crypto.subtle.digest('SHA-256', await file.arrayBuffer()));
-}
-
-async function matchesFile(file, expectedSize, expectedDigest) {
-  if (file.size !== expectedSize) return false;
-  const digest = await fileDigest(file);
-  return digest.every((byte, index) => byte === expectedDigest[index]);
-}
-
-async function getFileIfPresent(directory, name) {
-  try {
-    return await directory.getFileHandle(name);
-  } catch (error) {
-    if (error.name === 'NotFoundError') return null;
-    throw error;
-  }
-}
-
-async function writeVerifiedJpg(target, jpg) {
-  const stream = await target.createWritable();
-  try {
-    await stream.write(jpg);
-    await stream.close();
-  } catch (error) {
-    await stream.abort().catch(() => {});
-    throw error;
-  }
-  const digest = await fileDigest(jpg);
-  if (!await matchesFile(await target.getFile(), jpg.size, digest)) {
-    throw new Error('Il JPG salvato non corrisponde alla conversione');
-  }
-  return digest;
-}
-
-function finishReplacement(name) {
-  replace.hidden = true;
-  originalWebp = undefined;
-  replacement = undefined;
-  status.textContent = 'Salvato «' + name + '» e rimosso il WebP.';
-}
-
-async function replaceInFolder() {
-  const source = originalWebp;
-  const jpg = outputFile;
-  const destination = source.name.replace(/\.webp$/i, '.jpg');
-  let saved = false;
-  choose.disabled = replace.disabled = true;
-  status.textContent = 'Scegli la cartella del WebP originale.';
-  try {
-    const directory = await window.showDirectoryPicker({ mode: 'readwrite' });
-    const original = await getFileIfPresent(directory, source.name);
-    const digest = await fileDigest(source);
-    if (!original || !await matchesFile(await original.getFile(), source.size, digest)) {
-      status.textContent = 'In questa cartella non c’è il WebP che hai aperto.';
-      return;
-    }
-    if (await getFileIfPresent(directory, destination)) {
-      status.textContent = 'Esiste già «' + destination + '». Puoi usare Salva JPG per creare una copia.';
-      return;
-    }
-    if (!window.confirm('Salvare «' + destination + '» e cancellare «' + source.name + '» dalla cartella scelta?')) {
-      status.textContent = '';
-      return;
-    }
-    if (await getFileIfPresent(directory, destination)) {
-      status.textContent = 'Esiste già «' + destination + '».';
-      return;
-    }
-
-    const target = await directory.getFileHandle(destination, { create: true });
-    await writeVerifiedJpg(target, jpg);
-    saved = true;
-    const current = await getFileIfPresent(directory, source.name);
-    if (!current || !await matchesFile(await current.getFile(), source.size, digest)) {
-      status.textContent = 'JPG salvato. Il WebP è cambiato o non è più nella cartella.';
-      return;
-    }
-    await directory.removeEntry(source.name);
-    finishReplacement(destination);
-  } catch (error) {
-    status.textContent = saved
-      ? 'JPG salvato, ma non sono riuscito a rimuovere il WebP.'
-      : error.name === 'AbortError' ? '' : 'Sostituzione non riuscita. Il WebP è stato conservato.';
-  } finally {
-    choose.disabled = replace.disabled = false;
-  }
-}
-
-async function replaceUsingFilePickers() {
-  const source = originalWebp;
-  const jpg = outputFile;
-  choose.disabled = replace.disabled = true;
-  try {
-    if (!replacement) {
-      status.textContent = 'Seleziona il singolo WebP, anche se si trova in Download.';
-      const [original] = await window.showOpenFilePicker({
-        startIn: 'downloads',
-        types: [{ description: 'WebP', accept: { 'image/webp': ['.webp'] } }]
-      });
-      const digest = await fileDigest(source);
-      if (original.name !== source.name || !await matchesFile(await original.getFile(), source.size, digest)) {
-        status.textContent = 'Il file scelto è diverso dal WebP che hai aperto.';
-        return;
-      }
-      replacement = { original, digest };
-      replace.textContent = 'Salva JPG per sostituire';
-      status.textContent = 'WebP verificato. Ora scegli dove salvare il JPG.';
-      return;
-    }
-
-    if (!replacement.target) {
-      const target = await window.showSaveFilePicker({
-        startIn: 'downloads',
-        suggestedName: source.name.replace(/\.webp$/i, '.jpg'),
-        excludeAcceptAllOption: true,
-        types: [{ description: 'JPG', accept: { 'image/jpeg': ['.jpg', '.jpeg'] } }]
-      });
-      if (!/\.jpe?g$/i.test(target.name) || await target.isSameEntry(replacement.original) ||
-          (await target.getFile()).size !== 0) {
-        status.textContent = 'Scegli un nuovo file JPG per conservare i file esistenti.';
-        return;
-      }
-      const jpgDigest = await writeVerifiedJpg(target, jpg);
-      Object.assign(replacement, { target, jpgDigest });
-      replace.textContent = 'Rimuovi WebP originale';
-      status.textContent = 'JPG salvato e verificato. Ora puoi rimuovere il WebP.';
-      return;
-    }
-
-    const { original, digest, target, jpgDigest } = replacement;
-    if (await original.requestPermission({ mode: 'readwrite' }) !== 'granted') {
-      status.textContent = 'JPG salvato. Il browser non ha concesso il permesso di rimuovere il WebP.';
-      return;
-    }
-    if (!await matchesFile(await target.getFile(), jpg.size, jpgDigest) ||
-        !await matchesFile(await original.getFile(), source.size, digest)) {
-      status.textContent = 'Uno dei file è cambiato. Il WebP è stato conservato.';
-      return;
-    }
-    await original.remove();
-    finishReplacement(target.name);
-  } catch (error) {
-    if (error.name === 'AbortError') status.textContent = replacement?.target ? 'JPG salvato. WebP conservato.' : '';
-    else status.textContent = replacement?.target
-      ? 'JPG salvato. Rimozione del WebP non riuscita.'
-      : 'Sostituzione non riuscita. Il WebP è stato conservato.';
-  } finally {
-    choose.disabled = replace.disabled = false;
-  }
-}
-
-replace.addEventListener('click', () => {
-  if (!originalWebp || !outputFile || replace.disabled) return;
-  return canSelectFiles ? replaceUsingFilePickers() : replaceInFolder();
 });
 
 share.addEventListener('click', async () => {

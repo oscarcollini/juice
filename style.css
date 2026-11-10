@@ -29,6 +29,3 @@ footer a { color: inherit; }
 .install-panel button { min-height: 2.65rem; font-size: .875rem; }
 .install-panel p { margin: .4rem 0 0; font-size: .8rem; color: #bac9cd; }
 .install-panel p:empty { display: none; }
-
-#replace { margin-top: .55rem; font-size: .875rem; }
-button:disabled { opacity: .65; cursor: default; }
