@@ -13,6 +13,10 @@ const jpegQuality = 0.84;
 let outputUrl;
 let outputFile;
 let originalWebp;
+let replacement;
+const canSelectFiles = typeof window.showOpenFilePicker === 'function' &&
+  typeof window.showSaveFilePicker === 'function' &&
+  typeof window.FileSystemHandle?.prototype.remove === 'function';
 let selection = 0;
 
 const number = new Intl.NumberFormat('it-IT', { maximumFractionDigits: 2 });
@@ -65,6 +69,8 @@ function clearResult() {
   outputUrl = undefined;
   outputFile = undefined;
   originalWebp = undefined;
+  replacement = undefined;
+  replace.textContent = 'Sostituisci con JPG';
   replace.hidden = true;
 }
 
@@ -82,7 +88,7 @@ input.addEventListener('change', async () => {
     const name = (file.name.replace(/\.[^.]+$/, '') || 'foto') + '-juice.jpg';
     outputFile = new File([jpeg], name, { type: 'image/jpeg' });
     outputUrl = URL.createObjectURL(outputFile);
-    if (/\.webp$/i.test(file.name) && typeof window.showDirectoryPicker === 'function') {
+    if (/\.webp$/i.test(file.name) && (canSelectFiles || typeof window.showDirectoryPicker === 'function')) {
       originalWebp = file;
       replace.hidden = false;
     }
@@ -124,13 +130,34 @@ async function getFileIfPresent(directory, name) {
   }
 }
 
-replace.addEventListener('click', async () => {
-  if (!originalWebp || !outputFile || replace.disabled) return;
+async function writeVerifiedJpg(target, jpg) {
+  const stream = await target.createWritable();
+  try {
+    await stream.write(jpg);
+    await stream.close();
+  } catch (error) {
+    await stream.abort().catch(() => {});
+    throw error;
+  }
+  const digest = await fileDigest(jpg);
+  if (!await matchesFile(await target.getFile(), jpg.size, digest)) {
+    throw new Error('Il JPG salvato non corrisponde alla conversione');
+  }
+  return digest;
+}
+
+function finishReplacement(name) {
+  replace.hidden = true;
+  originalWebp = undefined;
+  replacement = undefined;
+  status.textContent = 'Salvato «' + name + '» e rimosso il WebP.';
+}
+
+async function replaceInFolder() {
   const source = originalWebp;
   const jpg = outputFile;
   const destination = source.name.replace(/\.webp$/i, '.jpg');
   let saved = false;
-  let stream;
   choose.disabled = replace.disabled = true;
   status.textContent = 'Scegli la cartella del WebP originale.';
   try {
@@ -155,13 +182,7 @@ replace.addEventListener('click', async () => {
     }
 
     const target = await directory.getFileHandle(destination, { create: true });
-    stream = await target.createWritable();
-    await stream.write(jpg);
-    await stream.close();
-    stream = undefined;
-    if (!await matchesFile(await target.getFile(), jpg.size, await fileDigest(jpg))) {
-      throw new Error('Il JPG salvato non corrisponde alla conversione');
-    }
+    await writeVerifiedJpg(target, jpg);
     saved = true;
     const current = await getFileIfPresent(directory, source.name);
     if (!current || !await matchesFile(await current.getFile(), source.size, digest)) {
@@ -169,17 +190,82 @@ replace.addEventListener('click', async () => {
       return;
     }
     await directory.removeEntry(source.name);
-    replace.hidden = true;
-    originalWebp = undefined;
-    status.textContent = 'Salvato «' + destination + '» e rimosso il WebP.';
+    finishReplacement(destination);
   } catch (error) {
-    if (stream) await stream.abort().catch(() => {});
     status.textContent = saved
       ? 'JPG salvato, ma non sono riuscito a rimuovere il WebP.'
       : error.name === 'AbortError' ? '' : 'Sostituzione non riuscita. Il WebP è stato conservato.';
   } finally {
     choose.disabled = replace.disabled = false;
   }
+}
+
+async function replaceUsingFilePickers() {
+  const source = originalWebp;
+  const jpg = outputFile;
+  choose.disabled = replace.disabled = true;
+  try {
+    if (!replacement) {
+      status.textContent = 'Seleziona il singolo WebP, anche se si trova in Download.';
+      const [original] = await window.showOpenFilePicker({
+        startIn: 'downloads',
+        types: [{ description: 'WebP', accept: { 'image/webp': ['.webp'] } }]
+      });
+      const digest = await fileDigest(source);
+      if (original.name !== source.name || !await matchesFile(await original.getFile(), source.size, digest)) {
+        status.textContent = 'Il file scelto è diverso dal WebP che hai aperto.';
+        return;
+      }
+      replacement = { original, digest };
+      replace.textContent = 'Salva JPG per sostituire';
+      status.textContent = 'WebP verificato. Ora scegli dove salvare il JPG.';
+      return;
+    }
+
+    if (!replacement.target) {
+      const target = await window.showSaveFilePicker({
+        startIn: 'downloads',
+        suggestedName: source.name.replace(/\.webp$/i, '.jpg'),
+        excludeAcceptAllOption: true,
+        types: [{ description: 'JPG', accept: { 'image/jpeg': ['.jpg', '.jpeg'] } }]
+      });
+      if (!/\.jpe?g$/i.test(target.name) || await target.isSameEntry(replacement.original) ||
+          (await target.getFile()).size !== 0) {
+        status.textContent = 'Scegli un nuovo file JPG per conservare i file esistenti.';
+        return;
+      }
+      const jpgDigest = await writeVerifiedJpg(target, jpg);
+      Object.assign(replacement, { target, jpgDigest });
+      replace.textContent = 'Rimuovi WebP originale';
+      status.textContent = 'JPG salvato e verificato. Ora puoi rimuovere il WebP.';
+      return;
+    }
+
+    const { original, digest, target, jpgDigest } = replacement;
+    if (await original.requestPermission({ mode: 'readwrite' }) !== 'granted') {
+      status.textContent = 'JPG salvato. Il browser non ha concesso il permesso di rimuovere il WebP.';
+      return;
+    }
+    if (!await matchesFile(await target.getFile(), jpg.size, jpgDigest) ||
+        !await matchesFile(await original.getFile(), source.size, digest)) {
+      status.textContent = 'Uno dei file è cambiato. Il WebP è stato conservato.';
+      return;
+    }
+    await original.remove();
+    finishReplacement(target.name);
+  } catch (error) {
+    if (error.name === 'AbortError') status.textContent = replacement?.target ? 'JPG salvato. WebP conservato.' : '';
+    else status.textContent = replacement?.target
+      ? 'JPG salvato. Rimozione del WebP non riuscita.'
+      : 'Sostituzione non riuscita. Il WebP è stato conservato.';
+  } finally {
+    choose.disabled = replace.disabled = false;
+  }
+}
+
+replace.addEventListener('click', () => {
+  if (!originalWebp || !outputFile || replace.disabled) return;
+  return canSelectFiles ? replaceUsingFilePickers() : replaceInFolder();
 });
 
 share.addEventListener('click', async () => {
