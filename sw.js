@@ -1,21 +1,27 @@
-const cacheName = 'juice-shell-v02';
-const shell = ['./', './index.html', './style.css?v=2', './app.js?v=2', './manifest.webmanifest?v=2', './icon-192.png?v=2', './icon-512.png?v=2'];
+const CACHE = 'bean-shell-pages-26';
+const SHELL = ['./', './index.html', './style.css?v=26', './app.js?v=26', './icon.svg',
+  './icon-192.png', './icon-512.png', './bean.webmanifest?v=20'];
 
 self.addEventListener('install', event => {
-  event.waitUntil(caches.open(cacheName).then(cache => cache.addAll(shell)).then(() => self.skipWaiting()));
+  event.waitUntil(caches.open(CACHE).then(cache => cache.addAll(SHELL)).then(() => self.skipWaiting()));
 });
+
 self.addEventListener('activate', event => {
   event.waitUntil(caches.keys().then(keys => Promise.all(keys
-    .filter(key => key.startsWith('juice-shell-') && key !== cacheName)
+    .filter(key => key.startsWith('bean-shell-') && key !== CACHE)
     .map(key => caches.delete(key)))).then(() => self.clients.claim()));
 });
+
 self.addEventListener('fetch', event => {
   const url = new URL(event.request.url);
-  const scope = self.registration.scope;
-  if (event.request.method !== 'GET' || !url.href.startsWith(scope)) return;
+  const scope = new URL(self.registration.scope);
+  if (event.request.method !== 'GET' || url.origin !== scope.origin || !url.pathname.startsWith(scope.pathname)) return;
   if (event.request.mode === 'navigate') {
-    event.respondWith(fetch(event.request).catch(() => caches.open(cacheName).then(cache => cache.match('./index.html'))));
-  } else if (shell.some(path => new URL(path, scope).href === url.href)) {
-    event.respondWith(caches.open(cacheName).then(cache => cache.match(event.request)).then(cached => cached || fetch(event.request)));
+    event.respondWith(fetch(event.request).catch(() => caches.match('./index.html')));
+    return;
+  }
+  const assets = SHELL.slice(2).map(path => new URL(path, self.registration.scope).href);
+  if (assets.includes(url.href)) {
+    event.respondWith(caches.match(event.request).then(cached => cached || fetch(event.request)));
   }
 });
