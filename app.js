@@ -109,3 +109,52 @@ share.addEventListener('click', async () => {
 });
 
 if ('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js').catch(console.warn);
+
+(() => {
+  const panel = document.getElementById('juiceInstallPanel');
+  const button = document.getElementById('juiceInstallButton');
+  const status = document.getElementById('juiceInstallStatus');
+  const appMode = matchMedia('(display-mode: standalone)');
+  let installPrompt = null;
+  let installedHere = false;
+
+  function updatePanel() {
+    panel.hidden = installedHere || appMode.matches || navigator.standalone === true;
+  }
+
+  window.addEventListener('beforeinstallprompt', event => {
+    event.preventDefault();
+    installPrompt = event;
+    status.textContent = '';
+  });
+  window.addEventListener('appinstalled', () => {
+    installedHere = true;
+    installPrompt = null;
+    updatePanel();
+  });
+  appMode.addEventListener('change', updatePanel);
+  updatePanel();
+
+  button.addEventListener('click', async () => {
+    const prompt = installPrompt;
+    if (!prompt) {
+      status.textContent = 'In Chrome apri il menu ⋮ e scegli «Aggiungi a schermata Home» o «Installa app», se disponibile.';
+      return;
+    }
+    installPrompt = null;
+    button.disabled = true;
+    status.textContent = '';
+    try {
+      await prompt.prompt();
+      const choice = await prompt.userChoice;
+      if (choice.outcome === 'accepted') {
+        installedHere = true;
+        updatePanel();
+      }
+    } catch {
+      status.textContent = 'Il browser non ha aperto la richiesta. Riprova dal menu ⋮.';
+    } finally {
+      button.disabled = false;
+    }
+  });
+})();

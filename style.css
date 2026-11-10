@@ -24,3 +24,8 @@ button, .actions a { display: inline-grid; place-items: center; min-height: 2.85
 #status:empty { display: none; }
 footer { padding: .65rem 0; text-align: center; color: #bac9cd; font-size: .73rem; }
 footer a { color: inherit; }
+
+.install-panel { margin-top: .7rem; text-align: center; }
+.install-panel button { min-height: 2.65rem; font-size: .875rem; }
+.install-panel p { margin: .4rem 0 0; font-size: .8rem; color: #bac9cd; }
+.install-panel p:empty { display: none; }
