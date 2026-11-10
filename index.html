@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#171c21">
+<title>Juice</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="stylesheet" href="style.css">
+<script src="app.js" defer></script>
+</head>
+<body>
+<header><h1>Juice</h1><button id="choose" type="button">Apri foto</button>
+<input id="input" type="file" accept="image/jpeg,image/webp,image/png,.jpg,.jpeg,.webp,.png" hidden></header>
+<main>
+  <figure id="preview" hidden><img id="photo" alt="Anteprima del JPG"></figure>
+  <p id="empty">Apri una foto per preparare un JPG da inviare.</p>
+  <section id="result" hidden aria-label="Risultato">
+    <div class="measure">
+      <div><strong id="weights"></strong><small id="dimensions"></small></div>
+      <strong id="change"></strong>
+    </div>
+    <div class="actions">
+      <a id="save" download>Salva JPG</a>
+      <button id="share" type="button" hidden>Condividi</button>
+    </div>
+  </section>
+  <p id="status" role="status"></p>
+</main>
+<footer>Juice v0.1 · Oscar Collini fecit · <a href="https://creativecommons.org/licenses/by-sa/4.0/deed.it" rel="license">CC BY-SA 4.0</a></footer>
+</body>
+</html>
