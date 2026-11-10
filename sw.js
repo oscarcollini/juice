@@ -1,5 +1,5 @@
-const cacheName = 'juice-shell-v06';
-const shell = ['./', './index.html', './style.css?v=6', './app.js?v=6', './manifest.webmanifest?v=6', './icon-192.png?v=6', './icon-512.png?v=6'];
+const cacheName = 'juice-shell-v07';
+const shell = ['./', './index.html', './app.js?v=7', './manifest.webmanifest?v=7', './icon-192.png?v=7', './icon-512.png?v=7'];
 
 self.addEventListener('install', event => {
   event.waitUntil(caches.open(cacheName).then(cache => cache.addAll(shell)).then(() => self.skipWaiting()));

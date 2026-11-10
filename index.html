@@ -5,11 +5,57 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#171c21">
 <title>juice</title>
-<link rel="manifest" href="manifest.webmanifest?v=6">
-<link rel="icon" href="icon-192.png?v=6">
-<link rel="apple-touch-icon" href="icon-192.png?v=6">
-<link rel="stylesheet" href="style.css?v=6">
-<script src="app.js?v=6" defer></script>
+<link rel="manifest" href="manifest.webmanifest?v=7">
+<link rel="icon" href="icon-192.png?v=7">
+<link rel="apple-touch-icon" href="icon-192.png?v=7">
+<style>
+:root { color-scheme: dark; font: 16px system-ui, sans-serif; background: #171c21; color: #eef4f4; --acid: #d2fa45; }
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+body { display: grid; grid-template-rows: auto minmax(0, 1fr) auto auto; height: 100dvh; max-width: 44rem; margin: auto; padding: 0 1rem env(safe-area-inset-bottom); }
+header, .measure, .actions { display: flex; align-items: center; gap: .65rem; }
+header, .measure { justify-content: space-between; }
+header { padding: .8rem 0; }
+h1 { color: var(--acid); font-size: 1.5rem; margin: 0; }
+header { grid-row: 1; }
+main { grid-row: 2; min-height: 0; display: grid; grid-template-rows: minmax(0, 1fr) auto auto; }
+.install-panel { grid-row: 3; }
+footer { grid-row: 4; }
+figure { grid-row: 1; position: relative; min-height: 0; margin: 0 0 .75rem; overflow: hidden; background: #101418; border-radius: .85rem; }
+figure img { position: absolute; inset: 0; display: block; width: 100%; height: 100%; object-fit: contain; }
+#empty { grid-row: 1; margin: auto; padding: 1.5rem; text-align: center; color: #bac9cd; }
+#result { grid-row: 2; background: #232d35; border-radius: .85rem; padding: .8rem; }
+#weights { font-size: 1.15rem; }
+small { display: block; color: #bac9cd; margin-top: .22rem; }
+#change { color: var(--acid); font-size: 1.35rem; white-space: nowrap; }
+#change[data-larger] { color: #ffd3aa; }
+.actions { margin-top: .8rem; }
+.actions > * { flex: 1; }
+button, .actions a { display: inline-grid; place-items: center; min-height: 2.85rem; padding: .4rem .75rem; font: inherit; font-weight: 650; text-decoration: none; color: #eef4f4; background: #293740; border: 1px solid #60717a; border-radius: .65rem; cursor: pointer; text-align: center; }
+#share { background: var(--acid); color: #17251f; border-color: transparent; }
+:focus-visible { outline: 2px solid var(--acid); outline-offset: 3px; }
+#status { grid-row: 3; margin: .5rem 0; font-size: .88rem; }
+#status:empty { display: none; }
+footer { padding: .65rem 0; text-align: center; color: #bac9cd; font-size: .73rem; }
+footer a { color: inherit; }
+
+.install-panel { margin-top: .7rem; text-align: center; }
+.install-panel button { min-height: 2.65rem; font-size: .875rem; }
+.install-panel p { margin: .4rem 0 0; font-size: .8rem; color: #bac9cd; }
+.install-panel p:empty { display: none; }
+
+/* Let controls remain reachable on unusually short screens or at high zoom. */
+@media (min-height: 28rem) {
+  html { overflow: clip; }
+}
+@media (max-height: 27.99rem) {
+  body { height: auto; min-height: 100dvh; }
+  body { grid-template-rows: auto minmax(min-content, 1fr) auto auto; }
+  main { grid-template-rows: minmax(min-content, 1fr) auto auto; }
+  figure { min-height: 8rem; }
+}
+</style>
+<script src="app.js?v=7" defer></script>
 </head>
 <body>
 <header><h1>juice</h1><button id="choose" type="button">Apri foto</button>
@@ -33,6 +79,6 @@
   <button id="juiceInstallButton" type="button">Installa juice</button>
   <p id="juiceInstallStatus" role="status"></p>
 </div>
-<footer>juice v0.6 · Oscar Collini fecit · <a href="https://creativecommons.org/licenses/by-sa/4.0/deed.it" rel="license">CC BY-SA 4.0</a></footer>
+<footer>juice v0.7 · Oscar Collini fecit · <a href="https://creativecommons.org/licenses/by-sa/4.0/deed.it" rel="license">CC BY-SA 4.0</a></footer>
 </body>
 </html>
