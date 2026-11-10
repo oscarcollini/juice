@@ -1,84 +1,38 @@
 <!doctype html>
 <html lang="it">
+<head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#bef15e">
-<title>Bean</title>
-<link rel="manifest" href="bean.webmanifest?v=20">
-<link rel="icon" href="icon.svg" type="image/svg+xml">
-<link rel="apple-touch-icon" href="icon-192.png">
-<link rel="stylesheet" href="style.css?v=26">
-<header><img src="icon.svg" alt=""><h1>Bean</h1><button id="resume-home" type="button" hidden>In corso</button><button id="queue-home" type="button" hidden>Coda</button><button id="refresh" type="button">Aggiorna</button></header>
+<meta name="theme-color" content="#171c21">
+<title>Juice</title>
+<link rel="manifest" href="manifest.webmanifest?v=2">
+<link rel="icon" href="icon-192.png?v=2">
+<link rel="apple-touch-icon" href="icon-192.png?v=2">
+<link rel="stylesheet" href="style.css?v=2">
+<script src="app.js?v=2" defer></script>
+</head>
+<body>
+<header><h1>Juice</h1><button id="choose" type="button">Apri foto</button>
+<input id="input" type="file" accept="image/jpeg,image/webp,image/png,.jpg,.jpeg,.webp,.png" hidden></header>
 <main>
-  <form id="search"><label class="sr" for="query">Cerca un podcast</label>
-    <div class="search-field">
-      <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 4 4"/></svg>
-      <input id="query" type="search" placeholder="Cerca un podcast" required maxlength="120">
+  <figure id="preview" hidden><img id="photo" alt="Anteprima del JPG"></figure>
+  <p id="empty">Apri una foto per preparare un JPG da inviare.</p>
+  <section id="result" hidden aria-label="Risultato">
+    <div class="measure">
+      <div><strong id="weights"></strong><small id="dimensions"></small></div>
+      <strong id="change"></strong>
     </div>
-    <button type="submit">Cerca</button>
-  </form>
-  <p id="status" role="status" hidden></p>
-  <section id="results-section" hidden>
-    <div class="heading"><h2>Risultati</h2><button id="close-results" type="button">Chiudi</button></div>
-    <ul id="results"></ul>
-  </section>
-  <section>
-    <div class="heading podcast-list-heading">
-      <h2>Podcast seguiti</h2>
-      <label class="sr" for="podcast-order">Ordina i podcast seguiti</label>
-      <select id="podcast-order">
-        <option value="title">A–Z</option>
-        <option value="recent">Ultima puntata</option>
-      </select>
+    <div class="actions">
+      <a id="save" download>Salva JPG</a>
+      <button id="share" type="button" hidden>Condividi</button>
     </div>
-    <ul id="following"></ul>
   </section>
-  <div id="beanInstallPanel" class="install-panel">
-    <button id="beanInstallButton" type="button">Installa Bean</button>
-    <p id="beanInstallStatus" role="status"></p>
-  </div>
-  <p class="colophon">Bean v0.26 · Oscar Collini fecit · <a href="https://creativecommons.org/licenses/by-sa/4.0/deed.it" target="_blank" rel="noopener">CC BY-SA 4.0</a></p>
+  <p id="status" role="status"></p>
 </main>
-<dialog id="resume-dialog" aria-labelledby="resume-title">
-  <div class="heading"><h2 id="resume-title">In corso</h2><form method="dialog"><button>Chiudi</button></form></div>
-  <ul id="resume-list"></ul>
-</dialog>
-<dialog id="queue-dialog" aria-labelledby="queue-title">
-  <div class="heading"><h2 id="queue-title">Coda</h2><form method="dialog"><button>Chiudi</button></form></div>
-  <ul id="queue-list"></ul>
-</dialog>
-<dialog id="episode-info" aria-labelledby="episode-info-title">
-  <div class="heading">
-    <h2 id="episode-info-title"></h2>
-    <form method="dialog"><button>Chiudi</button></form>
-  </div>
-  <div id="episode-notes"></div>
-  <p id="episode-page" hidden><a target="_blank" rel="noopener noreferrer">Pagina della puntata</a></p>
-</dialog>
-<footer id="player" hidden>
-  <button class="playing" id="player-view" type="button" aria-expanded="false" aria-controls="controls" aria-label="Apri vista guida">
-    <img id="playing-cover" class="cover" alt="">
-    <span class="playing-labels"><strong id="playing-title"></strong><small id="playing-show"></small></span>
-  </button>
-  <div class="player-actions">
-    <button id="resume-player" type="button">In corso</button>
-    <button id="queue-player" type="button">Coda</button>
-    <button id="finish-episode" type="button" aria-label="Segna come ascoltato e passa al prossimo episodio in coda">✓</button>
-  </div>
-  <div class="timeline"><span id="elapsed">0:00</span><input id="position" type="range" min="0" max="1" step="1" value="0" aria-label="Posizione di riproduzione" disabled><span id="duration">–:––</span></div>
-  <div class="controls" id="controls">
-    <button id="back" type="button" aria-label="Indietro di 10 secondi">−10 s</button>
-    <button id="toggle" type="button" aria-label="Riproduci">
-      <svg viewBox="0 0 24 24" aria-hidden="true"><path class="play-icon" d="M6 3l15 9-15 9z"/><path class="pause-icon" d="M5 4h5v16H5zm9 0h5v16h-5z"/></svg>
-    </button>
-    <button id="forward" type="button" aria-label="Avanti di 30 secondi">+30 s</button>
-    <div class="playback-options">
-      <label class="sr" for="rate">Velocità</label>
-      <select id="rate"><option value=".75">0,75×</option><option value="1" selected>1×</option><option value="1.25">1,25×</option><option value="1.5">1,5×</option><option value="1.75">1,75×</option><option value="2">2×</option></select>
-    </div>
-  </div>
-  <small id="audio-error" role="status" hidden></small>
-  <audio id="audio" preload="none"></audio>
-</footer>
-<script src="app.js?v=26" defer></script>
+<div class="install-panel" id="juiceInstallPanel" hidden>
+  <button id="juiceInstallButton" type="button">Installa Juice</button>
+  <p id="juiceInstallStatus" role="status"></p>
+</div>
+<footer>Juice v0.2 · Oscar Collini fecit · <a href="https://creativecommons.org/licenses/by-sa/4.0/deed.it" rel="license">CC BY-SA 4.0</a></footer>
+</body>
 </html>
