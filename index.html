@@ -4,19 +4,19 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#171c21">
-<title>Juice</title>
-<link rel="manifest" href="manifest.webmanifest?v=2">
-<link rel="icon" href="icon-192.png?v=2">
-<link rel="apple-touch-icon" href="icon-192.png?v=2">
-<link rel="stylesheet" href="style.css?v=2">
-<script src="app.js?v=2" defer></script>
+<title>juice</title>
+<link rel="manifest" href="manifest.webmanifest?v=4">
+<link rel="icon" href="icon-192.png?v=4">
+<link rel="apple-touch-icon" href="icon-192.png?v=4">
+<link rel="stylesheet" href="style.css?v=4">
+<script src="app.js?v=4" defer></script>
 </head>
 <body>
-<header><h1>Juice</h1><button id="choose" type="button">Apri foto</button>
+<header><h1>juice</h1><button id="choose" type="button">Apri foto</button>
 <input id="input" type="file" accept="image/jpeg,image/webp,image/png,.jpg,.jpeg,.webp,.png" hidden></header>
 <main>
   <figure id="preview" hidden><img id="photo" alt="Anteprima del JPG"></figure>
-  <p id="empty">Apri una foto per preparare un JPG da inviare.</p>
+  <p id="empty">Alleggerisci una foto o converti un WebP in JPG.</p>
   <section id="result" hidden aria-label="Risultato">
     <div class="measure">
       <div><strong id="weights"></strong><small id="dimensions"></small></div>
@@ -26,13 +26,14 @@
       <a id="save" download>Salva JPG</a>
       <button id="share" type="button" hidden>Condividi</button>
     </div>
+    <button id="replace" type="button" hidden>Sostituisci con JPG</button>
   </section>
   <p id="status" role="status"></p>
 </main>
 <div class="install-panel" id="juiceInstallPanel" hidden>
-  <button id="juiceInstallButton" type="button">Installa Juice</button>
+  <button id="juiceInstallButton" type="button">Installa juice</button>
   <p id="juiceInstallStatus" role="status"></p>
 </div>
-<footer>Juice v0.2 · Oscar Collini fecit · <a href="https://creativecommons.org/licenses/by-sa/4.0/deed.it" rel="license">CC BY-SA 4.0</a></footer>
+<footer>juice v0.4 · Oscar Collini fecit · <a href="https://creativecommons.org/licenses/by-sa/4.0/deed.it" rel="license">CC BY-SA 4.0</a></footer>
 </body>
 </html>

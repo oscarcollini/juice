@@ -1,11 +1,11 @@
-:root { color-scheme: dark; font: 16px system-ui, sans-serif; background: #171c21; color: #eef4f4; --mint: #a7e7cc; }
+:root { color-scheme: dark; font: 16px system-ui, sans-serif; background: #171c21; color: #eef4f4; --acid: #d2fa45; }
 * { box-sizing: border-box; }
 [hidden] { display: none !important; }
 body { display: flex; flex-direction: column; min-height: 100dvh; max-width: 44rem; margin: auto; padding: 0 1rem env(safe-area-inset-bottom); }
 header, .measure, .actions { display: flex; align-items: center; gap: .65rem; }
 header, .measure { justify-content: space-between; }
 header { padding: .8rem 0; }
-h1 { font-size: 1.5rem; margin: 0; }
+h1 { color: var(--acid); font-size: 1.5rem; margin: 0; }
 main { flex: 1; display: flex; flex-direction: column; }
 figure { flex: 1; display: grid; place-items: center; min-height: 9rem; margin: 0 0 .75rem; background: #101418; border-radius: .85rem; }
 figure img { display: block; max-width: 100%; max-height: min(62dvh, 36rem); object-fit: contain; }
@@ -13,13 +13,13 @@ figure img { display: block; max-width: 100%; max-height: min(62dvh, 36rem); obj
 #result { background: #232d35; border-radius: .85rem; padding: .8rem; }
 #weights { font-size: 1.15rem; }
 small { display: block; color: #bac9cd; margin-top: .22rem; }
-#change { color: var(--mint); font-size: 1.35rem; white-space: nowrap; }
+#change { color: var(--acid); font-size: 1.35rem; white-space: nowrap; }
 #change[data-larger] { color: #ffd3aa; }
 .actions { margin-top: .8rem; }
 .actions > * { flex: 1; }
 button, .actions a { display: inline-grid; place-items: center; min-height: 2.85rem; padding: .4rem .75rem; font: inherit; font-weight: 650; text-decoration: none; color: #eef4f4; background: #293740; border: 1px solid #60717a; border-radius: .65rem; cursor: pointer; text-align: center; }
-#share { background: var(--mint); color: #17251f; border-color: transparent; }
-:focus-visible { outline: 2px solid var(--mint); outline-offset: 3px; }
+#share { background: var(--acid); color: #17251f; border-color: transparent; }
+:focus-visible { outline: 2px solid var(--acid); outline-offset: 3px; }
 #status { margin: .5rem 0; font-size: .88rem; }
 #status:empty { display: none; }
 footer { padding: .65rem 0; text-align: center; color: #bac9cd; font-size: .73rem; }
@@ -29,3 +29,6 @@ footer a { color: inherit; }
 .install-panel button { min-height: 2.65rem; font-size: .875rem; }
 .install-panel p { margin: .4rem 0 0; font-size: .8rem; color: #bac9cd; }
 .install-panel p:empty { display: none; }
+
+#replace { margin-top: .55rem; font-size: .875rem; }
+button:disabled { opacity: .65; cursor: default; }
