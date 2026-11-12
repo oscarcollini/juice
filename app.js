@@ -12,7 +12,7 @@ let outputUrl;
 let outputFile;
 let selection = 0;
 
-const number = new Intl.NumberFormat('it-IT', { maximumFractionDigits: 2 });
+const number = new Intl.NumberFormat(appLocale.locale, { maximumFractionDigits: 2 });
 function formatSize(bytes) {
   return bytes >= 1_000_000
     ? number.format(bytes / 1_000_000) + ' MB'
@@ -42,7 +42,7 @@ async function makeJpeg(file) {
     const jpeg = await new Promise((resolve, reject) => {
       canvas.toBlob(blob => {
         if (blob?.type === 'image/jpeg') resolve(blob);
-        else reject(new Error('JPEG non disponibile'));
+        else reject(new Error(appLocale.text('JPEG non disponibile')));
       }, 'image/jpeg', jpegQuality);
     });
     return { jpeg, width, height };
@@ -70,7 +70,7 @@ input.addEventListener('change', async () => {
   if (!file) return;
   const current = ++selection;
   clearResult();
-  status.textContent = 'Preparo il JPG…';
+  status.textContent = appLocale.text('Preparo il JPG…');
   try {
     const { jpeg, width, height } = await makeJpeg(file);
     if (current !== selection) return;
@@ -87,12 +87,12 @@ input.addEventListener('change', async () => {
     const change = byId('change');
     change.textContent = (percent < 0 ? '−' : percent > 0 ? '+' : '') + Math.abs(percent) + '%';
     change.toggleAttribute('data-larger', percent > 0);
-    status.textContent = percent > 0 ? 'Il JPG pesa più dell’originale.' : '';
+    status.textContent = percent > 0 ? appLocale.text('Il JPG pesa più dell’originale.') : '';
     byId('empty').hidden = true;
     byId('preview').hidden = false;
     byId('result').hidden = false;
   } catch {
-    if (current === selection) status.textContent = 'Non riesco ad aprire questa immagine. Prova con un JPG, WebP o PNG.';
+    if (current === selection) status.textContent = appLocale.text('Non riesco ad aprire questa immagine. Prova con un JPG, WebP o PNG.');
   }
 });
 
@@ -103,7 +103,7 @@ share.addEventListener('click', async () => {
     await navigator.share({ files: [outputFile] });
   } catch (error) {
     if (current === selection && error.name !== 'AbortError') {
-      status.textContent = 'Condivisione non riuscita. Puoi usare Salva JPG.';
+      status.textContent = appLocale.text('Condivisione non riuscita. Puoi usare Salva JPG.');
     }
   }
 });
@@ -138,7 +138,7 @@ if ('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js').ca
   button.addEventListener('click', async () => {
     const prompt = installPrompt;
     if (!prompt) {
-      status.textContent = 'In Chrome apri il menu ⋮ e scegli «Aggiungi a schermata Home» o «Installa app», se disponibile.';
+      status.textContent = appLocale.text('In Chrome apri il menu ⋮ e scegli «Aggiungi a schermata Home» o «Installa app», se disponibile.');
       return;
     }
     installPrompt = null;
@@ -152,7 +152,7 @@ if ('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js').ca
         updatePanel();
       }
     } catch {
-      status.textContent = 'Il browser non ha aperto la richiesta. Riprova dal menu ⋮.';
+      status.textContent = appLocale.text('Il browser non ha aperto la richiesta. Riprova dal menu ⋮.');
     } finally {
       button.disabled = false;
     }
