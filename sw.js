@@ -1,4 +1,4 @@
-const cacheName = 'juice-shell-v08';
+const cacheName = 'juice-shell-v08-header-icon';
 const shell = ['./locale.js?v=08', './manifest-en.webmanifest?v=08', './', './index.html', './app.js?v=08', './manifest.webmanifest?v=08', './icon-192.png?v=7', './icon-512.png?v=7'];
 
 self.addEventListener('install', event => {
